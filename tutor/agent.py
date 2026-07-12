@@ -53,13 +53,18 @@ class TutorAgent:
 
     def explain(self, prompt, level="Beginner", topic=""):
         system = (
-            "You are a helpful, patient tutoring assistant. Provide clear explanations and examples, "
-            "adapted to the student's knowledge level. Keep explanations concise and actionable."
+            "You are a helpful, patient tutoring assistant. Tailor your explanation clearly to the student's knowledge level. "
+            "For Beginner students, use simple language and concrete examples. "
+            "For Intermediate students, introduce more precise terminology and step-by-step reasoning. "
+            "For Advanced students, provide nuanced context, deeper technical detail, and real-world application."
         )
         user = f"Level: {level}\n"
         if topic:
             user += f"Topic: {topic}\n"
-        user += f"Explain the following concept or question:\n{prompt}\nInclude an example and a brief checklist to verify understanding."
+        user += (
+            f"Explain the following concept or question for a {level} student:\n{prompt}\n"
+            "Include an example and a brief checklist to verify understanding."
+        )
 
         messages = [
             {"role": "system", "content": system},
@@ -67,17 +72,48 @@ class TutorAgent:
         ]
         return self._call(messages)
 
+    def clarify(self, prompt, level="Beginner", topic=""):
+        system = (
+            "You are a helpful, patient tutor who answers follow-up questions clearly and supports student understanding. "
+            "Adapt your explanation to the selected knowledge level: simple and concrete for Beginner, more precise for Intermediate, "
+            "and deeper with real-world context for Advanced."
+        )
+        user = f"Level: {level}\n"
+        if topic:
+            user += f"Topic: {topic}\n"
+        user += (
+            f"Clarify the following student doubt or follow-up request for a {level} student:\n{prompt}\n"
+            "Provide a concise explanation, examples if helpful, and a clear summary."
+        )
+        messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
+        return self._call(messages)
+
     def ask_followup(self, prompt, level="Beginner", topic=""):
-        system = "You are a tutor that asks one focused follow-up question to assess student understanding."
-        user = f"Student said: {prompt}\nProvide one clear follow-up question to assess comprehension, and suggest what a correct answer should include."
+        system = (
+            "You are a tutor that asks one focused follow-up question to assess student understanding, "
+            "adjusted for the student's knowledge level. Use simpler phrasing for Beginner, more detailed reasoning for Intermediate, "
+            "and more challenging comprehension for Advanced."
+        )
+        user = (
+            f"Student said: {prompt}\n"
+            f"Provide one clear follow-up question appropriate for a {level} student, and suggest what a correct answer should include."
+        )
         messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
         return self._call(messages)
 
     def generate_quiz(self, prompt, level="Beginner", topic="", num_questions: int = 5):
-        system = "You are a tutor generating short quizzes with answers and brief explanations."
+        system = (
+            "You are a tutor generating multiple-choice quizzes with answers and explanations tailored to the student's knowledge level. "
+            "For Intermediate and Advanced students, provide more technical vocabulary, deeper reasoning, and precise explanations. "
+            "For Beginner students, keep the language simple and the explanations clear."
+        )
         user = (
-            f"Create a quiz of {num_questions} questions for a {level} student."
-            f" Topic: {topic}\nFocus: {prompt}\nReturn numbered questions followed by answers and brief explanations."
+            f"Create a quiz of {num_questions} multiple-choice questions for a {level} student."
+            f" Topic: {topic}\nFocus: {prompt}\n"
+            "Return only valid JSON in this exact format:\n"
+            "{\"questions\": [{\"question\": \"...\", \"options\": {\"A\": \"...\", \"B\": \"...\", \"C\": \"...\", \"D\": \"...\"}, \"answer\": \"A\", \"explanation\": \"...\"}]}\n"
+            "Use answer keys A, B, C, or D. Do not include markdown, code fences, or extra text outside the JSON. "
+            "Make the option wording and explanation appropriate for the specified level."
         )
         messages = [{"role": "system", "content": system}, {"role": "user", "content": user}]
         return self._call(messages)
