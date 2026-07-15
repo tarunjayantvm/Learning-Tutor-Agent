@@ -121,4 +121,6 @@ The application will automatically open in your default browser.
 
 ---
 
+Deployed Link: https://learning-tutor-agent-9hr74syhszhmate4gmwqvf.streamlit.app/
+
 ⭐ If you found this project useful, consider giving it a **Star** on GitHub!
